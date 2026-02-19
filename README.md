@@ -2,7 +2,8 @@
 
 A clean, purple-themed todo PWA with dark mode support.
 
-**Live site:** https://jan85.github.io/flowy-todo/
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Visit%20Site-7c3aed?style=for-the-badge)](https://jan85.github.io/flowy-todo/)
+
 **Repository:** https://github.com/Jan85/flowy-todo
 
 ---
