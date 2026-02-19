@@ -7,6 +7,12 @@ A clean, purple-themed todo PWA with dark mode support.
 
 ---
 
+## Screenshot
+
+![Flowy Todo](screenshot.jpg)
+
+---
+
 ## Commands Used
 
 ### Check GitHub CLI authentication
