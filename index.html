@@ -5,704 +5,758 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flowy Todo</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --bg-page:    #ede9f6;
+            --bg-card:    #ffffff;
+            --text-title: #1e1b4b;
+            --text-sub:   #a09ab8;
+            --text-main:  #2d2d3a;
+            --text-done:  #c0b8d8;
+            --text-muted: #a09ab8;
+            --shadow:     rgba(120, 100, 180, 0.10);
+            --active-tab-bg:     #ffffff;
+            --active-tab-shadow: rgba(120, 100, 180, 0.14);
         }
+
+        [data-theme="dark"] {
+            --bg-page:    #111118;
+            --bg-card:    #1c1c28;
+            --text-title: #e8e8f5;
+            --text-sub:   #66668a;
+            --text-main:  #d4d4e4;
+            --text-done:  #55556a;
+            --text-muted: #8888aa;
+            --shadow:     rgba(0, 0, 0, 0.30);
+            --active-tab-bg:     #252538;
+            --active-tab-shadow: rgba(0, 0, 0, 0.25);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-page);
             min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .todo-app {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            padding: 30px;
-            margin-top: 40px;
-        }
-
-        h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 30px;
-            font-size: 2rem;
-        }
-
-        .input-group {
             display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 25px;
-        }
-
-        #todo-input {
-            flex: 1;
-            min-width: 200px;
-            padding: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 16px;
-            outline: none;
-            transition: border-color 0.3s;
-        }
-
-        #todo-input:focus {
-            border-color: #667eea;
-        }
-
-        #due-date {
-            padding: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 14px;
-            outline: none;
-            transition: border-color 0.3s;
-            cursor: pointer;
-            background: white;
-            color: #333;
-            min-width: 140px;
-        }
-
-        #due-date:focus {
-            border-color: #667eea;
-        }
-
-        #priority {
-            padding: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 14px;
-            outline: none;
-            cursor: pointer;
-            background: white;
-        }
-
-        #priority:focus {
-            border-color: #667eea;
-        }
-
-        #add-btn {
-            padding: 15px 25px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            cursor: pointer;
+            justify-content: center;
             transition: background 0.3s;
         }
 
-        #add-btn:hover {
-            background: #5568d3;
+        .app {
+            width: 100%;
+            max-width: 480px;
+            padding: 28px 20px 48px;
+            min-height: 100vh;
+            overflow-y: auto;
         }
 
-        .controls-row {
+        /* ── Top bar ── */
+        .topbar {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 15px;
+            justify-content: flex-end;
+            margin-bottom: 12px;
         }
 
-        .filter-group {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .sort-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .sort-group label {
-            font-size: 14px;
-            color: #666;
-        }
-
-        .sort-group select {
-            padding: 8px 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 14px;
+        .theme-btn {
+            background: none;
+            border: none;
             cursor: pointer;
-            background: white;
+            font-size: 1.3rem;
+            color: var(--text-muted);
+            padding: 4px;
+            opacity: 0.75;
+            transition: opacity 0.2s;
+            line-height: 1;
         }
 
-        .sort-group select:focus {
-            border-color: #667eea;
-            outline: none;
-        }
+        .theme-btn:hover { opacity: 1; }
 
-        .filter-btn {
-            padding: 8px 16px;
-            border: 2px solid #e0e0e0;
-            background: white;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.3s;
-        }
-
-        .filter-btn:hover, .filter-btn.active {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
-        }
-
-        .todo-list {
-            list-style: none;
-        }
-
-        .todo-item {
+        /* ── App header ── */
+        .app-header {
             display: flex;
             align-items: center;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            transition: all 0.3s;
-            flex-wrap: wrap;
-            gap: 10px;
+            gap: 14px;
+            margin-bottom: 28px;
+            justify-content: center;
         }
 
-        .todo-item:hover {
-            transform: translateX(5px);
-        }
-
-        .todo-item.completed {
-            opacity: 0.6;
-        }
-
-        .todo-item.completed .todo-text {
-            text-decoration: line-through;
-            color: #999;
-        }
-
-        .todo-item.overdue {
-            border-left: 4px solid #ff6b6b;
-        }
-
-        .checkbox {
-            width: 22px;
-            height: 22px;
-            border: 2px solid #667eea;
-            border-radius: 50%;
-            cursor: pointer;
-            margin-right: 10px;
+        .logo-icon {
+            width: 54px;
+            height: 54px;
+            background: linear-gradient(140deg, #b07cf8, #6366f1);
+            border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s;
             flex-shrink: 0;
+            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.32);
         }
 
-        .checkbox:hover {
-            background: #e0e0e0;
+        [data-theme="dark"] .logo-icon {
+            background: linear-gradient(140deg, #c084fc, #818cf8);
+            box-shadow: 0 4px 20px rgba(129, 140, 248, 0.35);
         }
 
-        .todo-item.completed .checkbox {
-            background: #667eea;
+        .logo-icon svg {
+            width: 28px;
+            height: 28px;
+            stroke: #fff;
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
         }
 
-        .checkbox::after {
-            content: '✓';
-            color: white;
-            font-size: 14px;
-            display: none;
+        .header-text h1 {
+            font-size: 1.85rem;
+            font-weight: 700;
+            color: var(--text-title);
+            line-height: 1.1;
         }
 
-        .todo-item.completed .checkbox::after {
-            display: block;
+        .header-text h1 .flowy {
+            background: linear-gradient(135deg, #b07cf8, #6366f1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        [data-theme="dark"] .header-text h1 .flowy {
+            background: linear-gradient(135deg, #c084fc, #818cf8);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
+        .header-text p {
+            color: var(--text-sub);
+            font-size: 0.88rem;
+            margin-top: 3px;
+        }
+
+        /* ── Stats row ── */
+        .stats-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            flex: 1;
+            background: var(--bg-card);
+            border-radius: 18px;
+            padding: 18px 10px;
+            text-align: center;
+            box-shadow: 0 2px 14px var(--shadow);
+        }
+
+        .stat-num {
+            font-size: 2rem;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+
+        .stat-num.total  { color: #7c3aed; }
+        .stat-num.inprog { color: #e8407a; }
+        .stat-num.done   { color: #6366f1; }
+
+        .stat-label {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            letter-spacing: 0.01em;
+        }
+
+        /* ── Add task card ── */
+        .add-task-card {
+            background: var(--bg-card);
+            border-radius: 18px;
+            padding: 8px 8px 8px 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 2px 14px var(--shadow);
+            margin-bottom: 12px;
+        }
+
+        .add-task-card input[type="text"] {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 1rem;
+            background: transparent;
+            color: var(--text-main);
+            font-family: inherit;
+        }
+
+        .add-task-card input::placeholder { color: var(--text-muted); }
+
+        .add-btn {
+            width: 42px;
+            height: 42px;
+            border-radius: 13px;
+            background: linear-gradient(135deg, #6b7cf8, #b07cf8);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 3px 10px rgba(107, 124, 248, 0.45);
+            transition: opacity 0.2s, transform 0.1s;
+        }
+
+        .add-btn:hover  { opacity: 0.9; transform: scale(1.05); }
+        .add-btn:active { transform: scale(0.95); }
+
+        .add-btn svg {
+            width: 20px;
+            height: 20px;
+            stroke: #fff;
+            stroke-width: 2.8;
+            stroke-linecap: round;
+            fill: none;
+        }
+
+        /* ── Meta row ── */
+        .meta-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .meta-row select,
+        .meta-row input[type="date"] {
+            flex: 1;
+            padding: 9px 12px;
+            border: none;
+            border-radius: 13px;
+            font-size: 0.88rem;
+            font-family: inherit;
+            outline: none;
+            color: var(--text-main);
+            background: var(--bg-card);
+            box-shadow: 0 2px 10px var(--shadow);
+            cursor: pointer;
+            transition: box-shadow 0.2s;
+            color-scheme: light dark;
+        }
+
+        .meta-row select:focus,
+        .meta-row input[type="date"]:focus {
+            box-shadow: 0 2px 14px rgba(99, 102, 241, 0.22);
+        }
+
+        /* ── Sort row ── */
+        .sort-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .sort-row label {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .sort-row select {
+            flex: 1;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 13px;
+            font-size: 0.85rem;
+            font-family: inherit;
+            outline: none;
+            color: var(--text-main);
+            background: var(--bg-card);
+            box-shadow: 0 2px 10px var(--shadow);
+            cursor: pointer;
+            transition: box-shadow 0.2s;
+        }
+
+        .sort-row select:focus {
+            box-shadow: 0 2px 14px rgba(99, 102, 241, 0.22);
+        }
+
+        /* ── Filter tabs ── */
+        .filter-card {
+            background: var(--bg-card);
+            border-radius: 18px;
+            padding: 6px;
+            display: flex;
+            gap: 4px;
+            box-shadow: 0 2px 14px var(--shadow);
+            margin-bottom: 20px;
+        }
+
+        .filter-tab {
+            flex: 1;
+            padding: 10px 0;
+            border: none;
+            border-radius: 13px;
+            background: transparent;
+            font-size: 0.93rem;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: all 0.2s;
+        }
+
+        .filter-tab.active {
+            background: var(--active-tab-bg);
+            color: #7c3aed;
+            box-shadow: 0 2px 8px var(--active-tab-shadow);
+            font-weight: 600;
+        }
+
+        /* ── Task list ── */
+        .todo-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .todo-item {
+            background: var(--bg-card);
+            border-radius: 18px;
+            padding: 16px 14px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            box-shadow: 0 2px 14px var(--shadow);
+            animation: slideIn 0.2s ease;
+        }
+
+        .todo-item.overdue {
+            box-shadow: 0 2px 14px var(--shadow), inset 3px 0 0 #e8407a;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Custom circle checkbox */
+        .task-check {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 26px;
+            height: 26px;
+            border: 2.5px solid #d4c8f0;
+            border-radius: 50%;
+            cursor: pointer;
+            position: relative;
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+
+        [data-theme="dark"] .task-check { border-color: #44446a; }
+
+        .task-check:checked {
+            background: linear-gradient(135deg, #6b7cf8, #b07cf8);
+            border-color: transparent;
+        }
+
+        .task-check:checked::after {
+            content: '';
+            position: absolute;
+            left: 7px;
+            top: 3px;
+            width: 6px;
+            height: 11px;
+            border: 2.5px solid #fff;
+            border-top: none;
+            border-left: none;
+            transform: rotate(45deg);
         }
 
         .todo-content {
             flex: 1;
-            min-width: 150px;
+            min-width: 0;
         }
 
         .todo-text {
-            font-size: 16px;
-            color: #333;
+            font-size: 0.98rem;
+            font-weight: 600;
+            color: var(--text-main);
+            word-break: break-word;
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 6px;
+            line-height: 1.3;
         }
 
-        .todo-meta {
+        .todo-text.completed {
+            text-decoration: line-through;
+            color: var(--text-done);
+            font-weight: 400;
+        }
+
+        .task-meta {
             display: flex;
-            gap: 10px;
+            align-items: center;
+            gap: 8px;
             flex-wrap: wrap;
         }
 
+        /* Priority badges */
         .priority-badge {
-            padding: 3px 10px;
-            border-radius: 12px;
-            font-size: 12px;
+            display: inline-block;
+            font-size: 0.73rem;
             font-weight: 600;
-        }
-
-        .priority-high {
-            background: #ffebee;
-            color: #c62828;
-        }
-
-        .priority-medium {
-            background: #fff3e0;
-            color: #e65100;
-        }
-
-        .priority-low {
-            background: #e8f5e9;
-            color: #2e7d32;
-        }
-
-        .due-date-badge {
             padding: 3px 10px;
-            border-radius: 12px;
-            font-size: 12px;
-            background: #e3f2fd;
-            color: #1565c0;
+            border-radius: 20px;
+            letter-spacing: 0.01em;
         }
 
-        .due-date-badge.overdue {
-            background: #ffebee;
-            color: #c62828;
+        .priority-high   { background: #fee2e2; color: #b91c1c; }
+        .priority-medium { background: #fef3c7; color: #92400e; }
+        .priority-low    { background: #dcfce7; color: #166534; }
+
+        [data-theme="dark"] .priority-high   { background: #3d1010; color: #fca5a5; }
+        [data-theme="dark"] .priority-medium { background: #3d2e00; color: #fcd34d; }
+        [data-theme="dark"] .priority-low    { background: #0f2d18; color: #86efac; }
+
+        /* Due date badge */
+        .due-badge {
+            display: inline-block;
+            font-size: 0.73rem;
+            font-weight: 500;
+            padding: 3px 10px;
+            border-radius: 20px;
+            background: #e0f2fe;
+            color: #0284c7;
         }
 
-        .actions {
-            display: flex;
-            gap: 8px;
+        .due-badge.overdue {
+            background: #fee2e2;
+            color: #b91c1c;
         }
+
+        [data-theme="dark"] .due-badge         { background: #0c2a3a; color: #7dd3fc; }
+        [data-theme="dark"] .due-badge.overdue { background: #3d1010; color: #fca5a5; }
 
         .delete-btn {
-            background: #ff6b6b;
-            color: white;
+            background: none;
             border: none;
-            padding: 8px 15px;
-            border-radius: 5px;
             cursor: pointer;
-            font-size: 14px;
-            transition: background 0.3s;
+            color: #d4c8f0;
+            font-size: 0.9rem;
+            padding: 6px;
+            border-radius: 8px;
+            flex-shrink: 0;
+            line-height: 1;
+            transition: color 0.2s, background 0.2s;
         }
+
+        [data-theme="dark"] .delete-btn { color: #44446a; }
 
         .delete-btn:hover {
-            background: #ee5a5a;
-        }
-
-        .stats {
-            text-align: center;
-            margin-top: 25px;
-            color: #666;
-            font-size: 14px;
+            color: #e8407a;
+            background: rgba(232, 64, 122, 0.08);
         }
 
         .empty-state {
             text-align: center;
-            color: #999;
-            padding: 40px 20px;
+            padding: 48px 0 32px;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            list-style: none;
         }
 
-        .empty-state span {
-            font-size: 50px;
-            display: block;
-            margin-bottom: 15px;
+        /* ── Footer ── */
+        .footer {
+            margin-top: 24px;
+            display: flex;
+            justify-content: center;
         }
 
-        @media (max-width: 500px) {
-            body {
-                padding: 10px;
-            }
-
-            .todo-app {
-                padding: 20px 15px;
-                margin-top: 20px;
-                border-radius: 15px;
-            }
-
-            h1 {
-                font-size: 1.5rem;
-                margin-bottom: 20px;
-            }
-
-            .input-group {
-                flex-direction: column;
-            }
-            
-            #todo-input, #due-date, #priority, #add-btn {
-                width: 100%;
-                padding: 12px;
-                font-size: 16px; /* Prevents zoom on iOS */
-            }
-
-            #add-btn {
-                padding: 14px;
-                font-size: 16px;
-            }
-
-            .controls-row {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 12px;
-            }
-
-            .filter-group {
-                justify-content: center;
-            }
-
-            .sort-group {
-                justify-content: center;
-            }
-
-            .filter-btn {
-                padding: 10px 14px;
-                font-size: 13px;
-            }
-
-            .todo-item {
-                flex-direction: column;
-                align-items: flex-start;
-                padding: 12px;
-            }
-
-            .checkbox {
-                width: 28px;
-                height: 28px;
-                margin-bottom: 8px;
-            }
-
-            .todo-text {
-                font-size: 15px;
-            }
-
-            .priority-badge, .due-date-badge {
-                font-size: 11px;
-                padding: 4px 8px;
-            }
-
-            .actions {
-                width: 100%;
-                justify-content: flex-end;
-                margin-top: 8px;
-            }
-
-            .delete-btn {
-                padding: 10px 16px;
-                font-size: 14px;
-            }
-
-            .stats {
-                font-size: 12px;
-                margin-top: 20px;
-            }
-
-            .empty-state {
-                padding: 30px 15px;
-            }
-
-            .empty-state span {
-                font-size: 40px;
-            }
+        .clear-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-family: inherit;
+            padding: 8px 20px;
+            border-radius: 12px;
+            transition: color 0.2s, background 0.2s;
         }
 
-        /* Extra small screens */
-        @media (max-width: 350px) {
-            .todo-app {
-                padding: 15px 10px;
-            }
+        .clear-btn:hover {
+            color: #e8407a;
+            background: rgba(232, 64, 122, 0.07);
+        }
 
-            h1 {
-                font-size: 1.3rem;
-            }
-
-            .filter-btn {
-                padding: 8px 10px;
-                font-size: 12px;
-            }
-
-            .sort-group label {
-                font-size: 12px;
-            }
+        @media (max-width: 480px) {
+            .app { padding: 20px 14px 40px; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="todo-app">
-            <h1>📝 My Todo List</h1>
-            
-            <div class="input-group">
-                <input type="text" id="todo-input" placeholder="Add a new task...">
-                <input type="date" id="due-date">
-                <select id="priority">
-                    <option value="low">🟢 Low</option>
-                    <option value="medium" selected>🟡 Medium</option>
-                    <option value="high">🔴 High</option>
-                </select>
-                <button id="add-btn">Add</button>
-            </div>
-            
-            <div class="controls-row">
-                <div class="filter-group">
-                    <button class="filter-btn active" data-filter="all">All</button>
-                    <button class="filter-btn" data-filter="active">Active</button>
-                    <button class="filter-btn" data-filter="completed">Completed</button>
-                </div>
-                <div class="sort-group">
-                    <label for="sort-by">Sort by:</label>
-                    <select id="sort-by">
-                        <option value="priority">Priority</option>
-                        <option value="dueDate">Due Date</option>
-                        <option value="created">Created</option>
-                    </select>
-                </div>
-            </div>
-            
-            <ul class="todo-list" id="todo-list"></ul>
-            
-            <div class="stats" id="stats"></div>
+    <div class="app">
+
+        <!-- Top bar -->
+        <div class="topbar">
+            <button class="theme-btn" id="themeToggle" onclick="toggleTheme()" title="Toggle dark mode">🌐</button>
         </div>
+
+        <!-- Header -->
+        <div class="app-header">
+            <div class="logo-icon">
+                <svg viewBox="0 0 24 24">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+            </div>
+            <div class="header-text">
+                <h1><span class="flowy">Flowy</span> Todo</h1>
+                <p>Organize your day effortlessly</p>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-num total" id="statTotal">0</div>
+                <div class="stat-label">Total Tasks</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num inprog" id="statActive">0</div>
+                <div class="stat-label">In Progress</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num done" id="statDone">0</div>
+                <div class="stat-label">Completed</div>
+            </div>
+        </div>
+
+        <!-- Add task -->
+        <div class="add-task-card">
+            <input type="text" id="todo-input" placeholder="Add a new task..." />
+            <button class="add-btn" id="add-btn" title="Add task">
+                <svg viewBox="0 0 24 24">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Meta -->
+        <div class="meta-row">
+            <select id="priority">
+                <option value="low">Low priority</option>
+                <option value="medium" selected>Medium priority</option>
+                <option value="high">High priority</option>
+            </select>
+            <input type="date" id="due-date" />
+        </div>
+
+        <!-- Sort -->
+        <div class="sort-row">
+            <label for="sort-by">Sort by:</label>
+            <select id="sort-by">
+                <option value="priority">Priority</option>
+                <option value="dueDate">Due Date</option>
+                <option value="created">Date Added</option>
+            </select>
+        </div>
+
+        <!-- Filter tabs -->
+        <div class="filter-card">
+            <button class="filter-tab active" data-filter="all">All</button>
+            <button class="filter-tab" data-filter="active">Active</button>
+            <button class="filter-tab" data-filter="completed">Done</button>
+        </div>
+
+        <!-- Task list -->
+        <ul class="todo-list" id="todo-list"></ul>
+
+        <!-- Footer -->
+        <div class="footer">
+            <button class="clear-btn" onclick="clearCompleted()">Clear completed</button>
+        </div>
+
     </div>
 
     <script>
-        // Get DOM elements
-        const todoInput = document.getElementById('todo-input');
+        // ── Theme ──────────────────────────────────────────────
+        (function () {
+            const saved = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (saved ? saved === 'dark' : prefersDark) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+        })();
+
+        function toggleTheme() {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                document.documentElement.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // ── State ──────────────────────────────────────────────
+        const todoInput    = document.getElementById('todo-input');
         const dueDateInput = document.getElementById('due-date');
         const priorityInput = document.getElementById('priority');
-        const addBtn = document.getElementById('add-btn');
-        const todoList = document.getElementById('todo-list');
-        const stats = document.getElementById('stats');
-        const filterBtns = document.querySelectorAll('.filter-btn');
-        const sortSelect = document.getElementById('sort-by');
+        const todoList     = document.getElementById('todo-list');
+        const filterBtns   = document.querySelectorAll('.filter-tab');
+        const sortSelect   = document.getElementById('sort-by');
 
         let currentFilter = 'all';
-        let currentSort = 'priority';
-
-        // Load todos from localStorage
+        let currentSort   = 'priority';
         let todos = JSON.parse(localStorage.getItem('todos')) || [];
 
-        // Save todos to localStorage
         function saveTodos() {
             localStorage.setItem('todos', JSON.stringify(todos));
             updateStats();
         }
 
-        // Update statistics
         function updateStats() {
             const completed = todos.filter(t => t.completed).length;
-            const total = todos.length;
-            const active = total - completed;
-            stats.textContent = `Completed: ${completed} | Active: ${active} | Total: ${total}`;
+            const total     = todos.length;
+            document.getElementById('statTotal').textContent  = total;
+            document.getElementById('statActive').textContent = total - completed;
+            document.getElementById('statDone').textContent   = completed;
         }
 
-        // Check if date is overdue
         function isOverdue(dueDate) {
             if (!dueDate) return false;
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const due = new Date(dueDate);
-            return due < today;
+            const today = new Date(); today.setHours(0,0,0,0);
+            return new Date(dueDate) < today;
         }
 
-        // Sort todos based on current sort option
-        function sortTodos(todoArray) {
-            const priorityOrder = { high: 0, medium: 1, low: 2 };
-            return [...todoArray].sort((a, b) => {
-                // Completed tasks go to bottom
+        function sortTodos(arr) {
+            const order = { high: 0, medium: 1, low: 2 };
+            return [...arr].sort((a, b) => {
                 if (a.completed !== b.completed) return a.completed ? 1 : -1;
-                
-                // Sort based on selected option
                 if (currentSort === 'priority') {
-                    if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
-                        return priorityOrder[a.priority] - priorityOrder[b.priority];
-                    }
-                    // Secondary sort by due date
-                    if (a.dueDate && b.dueDate) {
-                        return new Date(a.dueDate) - new Date(b.dueDate);
-                    }
+                    const diff = (order[a.priority] ?? 1) - (order[b.priority] ?? 1);
+                    if (diff !== 0) return diff;
+                    if (a.dueDate && b.dueDate) return new Date(a.dueDate) - new Date(b.dueDate);
                     if (a.dueDate) return -1;
-                    if (b.dueDate) return 1;
+                    if (b.dueDate) return  1;
                 } else if (currentSort === 'dueDate') {
-                    // Sort by due date (earlier dates first)
-                    if (a.dueDate && b.dueDate) {
-                        return new Date(a.dueDate) - new Date(b.dueDate);
-                    }
+                    if (a.dueDate && b.dueDate) return new Date(a.dueDate) - new Date(b.dueDate);
                     if (a.dueDate) return -1;
-                    if (b.dueDate) return 1;
-                    // Tasks without due date come after
-                    if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
-                        return priorityOrder[a.priority] - priorityOrder[b.priority];
-                    }
+                    if (b.dueDate) return  1;
                 } else if (currentSort === 'created') {
-                    // Sort by created date (newest first)
                     return new Date(b.createdAt) - new Date(a.createdAt);
                 }
                 return 0;
             });
         }
 
-        // Get priority display text
-        function getPriorityText(priority) {
-            switch(priority) {
-                case 'high': return '🔴 High';
-                case 'medium': return '🟡 Medium';
-                case 'low': return '🟢 Low';
-                default: return '🟡 Medium';
-            }
-        }
-
-        // Format date for display
         function formatDate(dateStr) {
             if (!dateStr) return '';
-            const date = new Date(dateStr);
-            const today = new Date();
-            const tomorrow = new Date(today);
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            
-            today.setHours(0, 0, 0, 0);
-            tomorrow.setHours(0, 0, 0, 0);
-            date.setHours(0, 0, 0, 0);
-            
-            if (date.getTime() === today.getTime()) return 'Today';
+            const date     = new Date(dateStr);
+            const today    = new Date(); today.setHours(0,0,0,0);
+            const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
+            date.setHours(0,0,0,0);
+            if (date.getTime() === today.getTime())    return 'Today';
             if (date.getTime() === tomorrow.getTime()) return 'Tomorrow';
-            
             return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         }
 
-        // Render todos
+        function escapeHtml(s) {
+            return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+                     .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+        }
+
         function renderTodos() {
-            todoList.innerHTML = '';
-            
-            // Filter todos
-            let filteredTodos = todos;
-            if (currentFilter === 'active') {
-                filteredTodos = todos.filter(t => !t.completed);
-            } else if (currentFilter === 'completed') {
-                filteredTodos = todos.filter(t => t.completed);
-            }
-            
-            // Sort todos
-            const sortedTodos = sortTodos(filteredTodos);
-            
-            if (sortedTodos.length === 0) {
-                todoList.innerHTML = `
-                    <div class="empty-state">
-                        <span>📋</span>
-                        <p>${currentFilter === 'all' ? 'No tasks yet! Add your first task above.' : 'No ' + currentFilter + ' tasks.'}</p>
-                    </div>
-                `;
-                stats.textContent = '';
+            let filtered = todos;
+            if (currentFilter === 'active')    filtered = todos.filter(t => !t.completed);
+            if (currentFilter === 'completed') filtered = todos.filter(t =>  t.completed);
+
+            const sorted = sortTodos(filtered);
+
+            if (sorted.length === 0) {
+                todoList.innerHTML = `<li class="empty-state">No tasks here.</li>`;
+                updateStats();
                 return;
             }
 
-            sortedTodos.forEach((todo) => {
-                const index = todos.indexOf(todo);
-                const overdue = !todo.completed && isOverdue(todo.dueDate);
-                const li = document.createElement('li');
-                li.className = `todo-item ${todo.completed ? 'completed' : ''} ${overdue ? 'overdue' : ''}`;
-                
-                let metaHTML = '<div class="todo-meta">';
-                metaHTML += `<span class="priority-badge priority-${todo.priority}">${getPriorityText(todo.priority)}</span>`;
-                if (todo.dueDate) {
-                    const overdueClass = overdue ? 'overdue' : '';
-                    metaHTML += `<span class="due-date-badge ${overdueClass}">📅 ${formatDate(todo.dueDate)}</span>`;
-                }
-                metaHTML += '</div>';
-                
-                li.innerHTML = `
-                    <div class="checkbox" onclick="toggleTodo(${index})"></div>
+            todoList.innerHTML = sorted.map(todo => {
+                const idx      = todos.indexOf(todo);
+                const overdue  = !todo.completed && isOverdue(todo.dueDate);
+                const priLabel = { high: 'High', medium: 'Medium', low: 'Low' }[todo.priority] || 'Medium';
+                const dueBadge = todo.dueDate
+                    ? `<span class="due-badge ${overdue ? 'overdue' : ''}">📅 ${formatDate(todo.dueDate)}</span>`
+                    : '';
+                return `
+                <li class="todo-item ${overdue ? 'overdue' : ''}">
+                    <input type="checkbox" class="task-check" ${todo.completed ? 'checked' : ''}
+                        onchange="toggleTodo(${idx})" />
                     <div class="todo-content">
-                        <span class="todo-text">${todo.text}</span>
-                        ${metaHTML}
+                        <span class="todo-text ${todo.completed ? 'completed' : ''}">${escapeHtml(todo.text)}</span>
+                        <div class="task-meta">
+                            <span class="priority-badge priority-${todo.priority}">${priLabel}</span>
+                            ${dueBadge}
+                        </div>
                     </div>
-                    <div class="actions">
-                        <button class="delete-btn" onclick="deleteTodo(${index})">Delete</button>
-                    </div>
-                `;
-                todoList.appendChild(li);
-            });
+                    <button class="delete-btn" onclick="deleteTodo(${idx})" title="Delete">&#10005;</button>
+                </li>`;
+            }).join('');
 
             updateStats();
         }
 
-        // Add new todo
         function addTodo() {
             const text = todoInput.value.trim();
-            if (text === '') return;
-
+            if (!text) return;
             todos.push({
-                text: text,
+                text,
                 completed: false,
-                dueDate: dueDateInput.value || null,
-                priority: priorityInput.value,
+                dueDate:   dueDateInput.value || null,
+                priority:  priorityInput.value,
                 createdAt: new Date().toISOString()
             });
-
-            todoInput.value = '';
-            dueDateInput.value = '';
-            priorityInput.value = 'medium';
+            todoInput.value      = '';
+            dueDateInput.value   = '';
+            priorityInput.value  = 'medium';
             saveTodos();
             renderTodos();
         }
 
-        // Toggle todo completion
         function toggleTodo(index) {
             todos[index].completed = !todos[index].completed;
-            saveTodos();
-            renderTodos();
+            saveTodos(); renderTodos();
         }
 
-        // Delete todo
         function deleteTodo(index) {
             todos.splice(index, 1);
-            saveTodos();
-            renderTodos();
+            saveTodos(); renderTodos();
         }
 
-        // Filter todos
+        function clearCompleted() {
+            todos = todos.filter(t => !t.completed);
+            saveTodos(); renderTodos();
+        }
+
         function setFilter(filter) {
             currentFilter = filter;
-            filterBtns.forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.filter === filter);
-            });
+            filterBtns.forEach(btn =>
+                btn.classList.toggle('active', btn.dataset.filter === filter)
+            );
             renderTodos();
         }
 
-        // Event listeners
-        addBtn.addEventListener('click', addTodo);
+        // ── Event listeners ────────────────────────────────────
+        document.getElementById('add-btn').addEventListener('click', addTodo);
+        todoInput.addEventListener('keypress', e => { if (e.key === 'Enter') addTodo(); });
+        filterBtns.forEach(btn => btn.addEventListener('click', () => setFilter(btn.dataset.filter)));
+        sortSelect.addEventListener('change', e => { currentSort = e.target.value; renderTodos(); });
 
-        todoInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                addTodo();
-            }
-        });
-
-        filterBtns.forEach(btn => {
-            btn.addEventListener('click', () => setFilter(btn.dataset.filter));
-        });
-
-        // Sort change handler
-        sortSelect.addEventListener('change', (e) => {
-            currentSort = e.target.value;
-            renderTodos();
-        });
-
-        // Set minimum date to today
         const today = new Date().toISOString().split('T')[0];
         dueDateInput.setAttribute('min', today);
 
-        // Initial render
         renderTodos();
     </script>
 </body>
